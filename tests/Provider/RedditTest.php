@@ -78,7 +78,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
 
     /**
-     * @expectedException Rudolf\OAuth2\Client\Exception\ProviderException
+     * @expectedException InvalidArgumentException
      */
     public function testGetHeadersInvalidUserAgent()
     {

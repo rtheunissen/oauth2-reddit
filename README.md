@@ -22,7 +22,7 @@ $reddit = new Reddit([
     'clientSecret'  => 'yourClientSecret',
     'redirectUri'   => 'yourRedirectUri',
     'userAgent'     => 'platform:appid:version, (by /u/username)',
-    'scopes'        => ['identity', 'read'],
+    'scopes'        => ['identity', 'read', ...],
 ]);
 ```
 
@@ -60,11 +60,5 @@ $accessToken = $reddit->getAccessToken('password', [
 
 #### Using the access token
 
-In order to make authenticated requests using an access token, Reddit requires that a few authorization headers be sent along with the request data. These can be accessed using `$reddit->getHeaders($token)`.
-
-Use https://oauth.reddit.com as the base of the URL, and note that this is just an example and should be adapted to suit whatever HTTP library you are using.
-
-```php
-$client->post($url, $data, $reddit->getHeaders($token));
-```
-
+Reddit requires a few authorization headers to allow authenticated requests using an access token. 
+These can be accessed using `$reddit->getHeaders($token)`.

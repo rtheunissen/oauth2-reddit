@@ -4,8 +4,8 @@ namespace Rudolf\OAuth2\Client\Provider;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
-use Rudolf\OAuth2\Client\Exception\ProviderException;
 
+use InvalidArgumentException;
 
 class Reddit extends AbstractProvider
 {
@@ -63,16 +63,11 @@ class Reddit extends AbstractProvider
      */
     protected function getUserAgent()
     {
-        // Return the provider's user agent which would be set when constructed.
         if ($this->userAgent) {
             return $this->userAgent;
         }
 
-        // Use the server user agent as fallback if no explicit one was set.
-        if ( ! isset($_SERVER["HTTP_USER_AGENT"])) {
-            throw new ProviderException("User agent is missing");
-        }
-
+        // Use the server user agent as a fallback if no explicit one was set.
         return $_SERVER["HTTP_USER_AGENT"];
     }
 
@@ -86,7 +81,7 @@ class Reddit extends AbstractProvider
     protected function validateUserAgent()
     {
         if ( ! preg_match("~^.+:.+:.+ \(by /u/.+\)$~", $this->getUserAgent())) {
-            throw new ProviderException("User agent is not valid");
+            throw new InvalidArgumentException("User agent is not valid");
         }
     }
 
@@ -107,7 +102,6 @@ class Reddit extends AbstractProvider
             $headers["Authorization"] = "Basic $auth";
         }
 
-        // The basic auth token will be overided by the parent auth headers
         return array_merge(parent::getHeaders($token), $headers);
     }
 
