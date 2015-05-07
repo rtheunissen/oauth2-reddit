@@ -4,12 +4,16 @@ namespace Rudolf\OAuth2\Client\Provider;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
+use Rudolf\OAuth2\Client\Exception\ProviderException;
+
 
 class Reddit extends AbstractProvider
 {
 
     /**
      * User agent string required by Reddit
+     * Format <platform>:<app ID>:<version string> (by /u/<reddit username>)
+     *
      * @see https://github.com/reddit/reddit/wiki/API
      */
     public $userAgent = "";
@@ -58,7 +62,31 @@ class Reddit extends AbstractProvider
      */
     protected function getUserAgent()
     {
-        return $this->userAgent ?: $_SERVER["HTTP_USER_AGENT"];
+        // Return the provider's user agent which would be set when constructed.
+        if ($this->userAgent) {
+            return $this->userAgent;
+        }
+
+        // Use the server user agent as fallback if no explicit one was set.
+        if ( ! isset($_SERVER["HTTP_USER_AGENT"])) {
+            throw new ProviderException("User agent is missing");
+        }
+
+        return $_SERVER["HTTP_USER_AGENT"];
+    }
+
+
+    /**
+     * Validates that the user agent follows the Reddit API guide.
+     * Pattern: <platform>:<app ID>:<version string> (by /u/<reddit username>)
+     *
+     * @return boolean
+     */
+    protected function validateUserAgent()
+    {
+        if ( ! preg_match("~^.+:.+:.+ \(by /u/.+\)$~", $this->getUserAgent())) {
+            throw new ProviderException("User agent is not valid");
+        }
     }
 
     /**
@@ -66,6 +94,8 @@ class Reddit extends AbstractProvider
      */
     public function getHeaders($token = null)
     {
+        $this->validateUserAgent();
+
         $headers = [
             "User-Agent" => $this->getUserAgent(),
         ];
