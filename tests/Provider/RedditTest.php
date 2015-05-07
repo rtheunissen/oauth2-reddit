@@ -3,8 +3,6 @@
 namespace Rudolf\OAuth2\Client\Tests\Provider;
 
 use Rudolf\OAuth2\Client\Provider\Reddit;
-use Rudolf\OAuth2\Client\Exception\ProviderException;
-
 use League\OAuth2\Client\Token\AccessToken;
 
 class RedditTest extends \PHPUnit_Framework_TestCase
@@ -78,13 +76,16 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $this->provider->getHeaders());
     }
 
+
+    /**
+     * @expectedException Rudolf\OAuth2\Client\Exception\ProviderException
+     */
     public function testGetHeadersInvalidUserAgent()
     {
         $invalidProvider = $this->createProvider([
             "userAgent" => "invalidUserAgent!!",
         ]);
 
-        $this->setExpectedException(ProviderException::class);
         $invalidProvider->getHeaders();
     }
 
