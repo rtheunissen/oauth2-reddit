@@ -83,7 +83,7 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
-    public function getAuthorizationUrl(array $options = array())
+    public function getAuthorizationUrl($options = array())
     {
         $url = parent::getAuthorizationUrl();
 
