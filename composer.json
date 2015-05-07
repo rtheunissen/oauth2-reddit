@@ -1,0 +1,22 @@
+{
+    "name": "rtheunissen/oauth2-reddit",
+    "description": "Reddit OAuth2 provider for league/oauth2-client",
+    "require": {
+        "php": ">=5.4.0",
+        "league/oauth2-client": "0.11.*",
+        "phpunit/phpunit": "~4.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rudolf\\OAuth2\\Client\\": "src",
+            "Rudolf\\OAuth2\\Client\\Tests\\": "tests"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rudi Theunissen",
+            "email": "rudolf.theunissen@gmail.com"
+        }
+    ]
+}
