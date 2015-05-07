@@ -1,4 +1,4 @@
-# Reddit OAuth2 client provider
+# Reddit OAuth2 Provider
 
 [![Build Status](https://img.shields.io/travis/rtheunissen/oauth2-reddit.svg)](https://travis-ci.org/rtheunissen/oauth2-reddit)
 [![Latest Version](https://img.shields.io/packagist/v/rtheunissen/oauth2-reddit.svg)](https://packagist.org/packages/rtheunissen/oauth2-reddit)
