@@ -58,7 +58,7 @@ class Reddit extends AbstractProvider
      */
     protected function getUserAgent()
     {
-        return $this->userAgent ?: $_SERVER['HTTP_USER_AGENT'];
+        return $this->userAgent ?: $_SERVER["HTTP_USER_AGENT"];
     }
 
     /**
@@ -73,7 +73,7 @@ class Reddit extends AbstractProvider
         // We have to use HTTP Basic Auth when requesting an access token
         if ( ! $token) {
             $auth = base64_encode("{$this->clientId}:{$this->clientSecret}");
-            $headers["Authorization"] = 'Basic $auth';
+            $headers["Authorization"] = "Basic $auth";
         }
 
         // The basic auth token will be overided by the parent auth headers
