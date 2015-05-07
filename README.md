@@ -11,14 +11,3 @@ This package provides Reddit integration for [thephpleague/oauth2-client](https:
 ```sh
 composer require rtheunissen/oauth2-reddit
 ```
-
-## Usage
-
-```php
-$provider = new Rudolf\OAuth2\Client\Provider\Reddit([
-    'clientId' => '',
-    'clientSecret' => '',
-    'redirectUri' => '',
-    'userAgent' => '',
-]);
-```
