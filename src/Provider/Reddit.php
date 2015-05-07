@@ -59,6 +59,7 @@ class Reddit extends AbstractProvider
      * Returns the user agent, which is required to be set.
      *
      * @return string
+     * @throws Rudolf\OAuth2\Client\Exception\ProviderException
      */
     protected function getUserAgent()
     {
@@ -80,7 +81,7 @@ class Reddit extends AbstractProvider
      * Validates that the user agent follows the Reddit API guide.
      * Pattern: <platform>:<app ID>:<version string> (by /u/<reddit username>)
      *
-     * @return boolean
+     * @throws Rudolf\OAuth2\Client\Exception\ProviderException
      */
     protected function validateUserAgent()
     {

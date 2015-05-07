@@ -13,7 +13,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
     private function getDefaultOptions()
     {
         return [
-            'clientId'      => '1234',
+            'clientId'      => 'myappid',
             'clientSecret'  => 'topsykretz',
             'redirectUri'   => 'http://example.com',
             'userAgent'     => 'platform:app_id:version (by /u/username)',
@@ -68,9 +68,12 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
     public function testGetHeaders()
     {
+        extract($this->getDefaultOptions());
+        $auth = base64_encode("{$clientId}:{$clientSecret}");
+
         $expected = [
             "User-Agent"    => "platform:app_id:version (by /u/username)",
-            "Authorization" => "Basic MTIzNDp0b3BzeWtyZXR6"
+            "Authorization" => "Basic $auth"
         ];
         $this->assertEquals($expected, $this->provider->getHeaders());
     }
@@ -91,7 +94,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
         $token = new AccessToken([
             'access_token' => $accessToken,
-            'expires'      => time() + 10
+            'expires'      => time() + 3600
         ]);
 
         $expected = [
