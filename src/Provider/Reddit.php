@@ -17,6 +17,11 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
+    public $authorizationHeader = "bearer";
+
+    /**
+     * {@inheritDoc}
+     */
     public function urlAuthorize()
     {
         return "https://ssl.reddit.com/api/v1/authorize";
@@ -61,8 +66,32 @@ class Reddit extends AbstractProvider
      */
     public function getHeaders($token = null)
     {
-        return array_merge(parent::getHeaders($token), [
+        $headers = [
             "User-Agent" => $this->getUserAgent(),
-        ]);
+        ];
+
+        // We have to use HTTP Basic Auth when requesting an access token
+        if ( ! $token) {
+            $auth = base64_encode("{$this->clientId}:{$this->clientSecret}");
+            $headers["Authorization"] = 'Basic $auth';
+        }
+
+        // The basic auth token will be overided by the parent auth headers
+        return array_merge(parent::getHeaders($token), $headers);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAuthorizationUrl(array $options = array())
+    {
+        $url = parent::getAuthorizationUrl();
+
+        // This is required as an option to be given a refresh token
+        if (isset($options['duration'])) {
+            $url .= "&duration={$options['duration']}";
+        }
+
+        return $url;
     }
 }
