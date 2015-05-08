@@ -24,7 +24,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         return new Reddit(array_merge($this->getDefaultOptions(), $options));
     }
 
-    public function setUp()
+    protected function setUp()
     {
         $this->provider = $this->createProvider();
     }
