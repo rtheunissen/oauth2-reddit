@@ -10,12 +10,12 @@ use League\OAuth2\Client\Token\AccessToken;
  */
 class InstalledClient implements GrantInterface
 {
-	public function __toString()
-	{
-		return 'https://oauth.reddit.com/grants/installed_client';
-	}
+    public function __toString()
+    {
+        return 'https://oauth.reddit.com/grants/installed_client';
+    }
 
-	public function prepRequestParams($defaultParams, $params)
+    public function prepRequestParams($defaultParams, $params)
     {
         if ( ! isset($params["device_id"]) || empty($params["device_id"])) {
             throw new \BadMethodCallException("Missing device_id");
@@ -23,7 +23,7 @@ class InstalledClient implements GrantInterface
 
         // device_id has to be a 20-30 character ASCII string
         if ( ! preg_match("/^[[:ascii:]]{20,30}$/", $params["device_id"])) {
-        	throw new \InvalidArgumentException("Invalid device_id");
+          throw new \InvalidArgumentException("Invalid device_id");
         }
 
         return array_merge($defaultParams, $params);

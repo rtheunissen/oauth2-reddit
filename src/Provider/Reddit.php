@@ -4,9 +4,7 @@ namespace Rudolf\OAuth2\Client\Provider;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
-
 use Rudolf\OAuth2\Client\Grant\InstalledClient;
-
 use InvalidArgumentException;
 
 class Reddit extends AbstractProvider
