@@ -5,11 +5,12 @@ namespace Rudolf\OAuth2\Client\Provider;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 
+use Rudolf\OAuth2\Client\Grant\InstalledClient;
+
 use InvalidArgumentException;
 
 class Reddit extends AbstractProvider
 {
-
     /**
      * User agent string required by Reddit
      * Format <platform>:<app ID>:<version string> (by /u/<reddit username>)
@@ -107,13 +108,29 @@ class Reddit extends AbstractProvider
 
     /**
      * {@inheritDoc}
+     *
+     * @see https://github.com/reddit/reddit/wiki/OAuth2
+     */
+    public function getAccessToken($grant = "authorization_code", $params = [])
+    {
+        // Allow Reddit-specific 'installed_client' to be specified as a string,
+        // keeping consistent with the other grant types.
+        if ($grant === "installed_client") {
+            $grant = new InstalledClient();
+        }
+
+        return parent::getAccessToken($grant, $params);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function getAuthorizationUrl($options = [])
     {
         $url = parent::getAuthorizationUrl();
 
         // This is required as an option to be given a refresh token
-        if (isset($options['duration'])) {
+        if (isset($options["duration"])) {
             $url .= "&duration={$options['duration']}";
         }
 

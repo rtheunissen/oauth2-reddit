@@ -8,30 +8,78 @@ use League\OAuth2\Client\Token\AccessToken;
 class RedditTest extends \PHPUnit_Framework_TestCase
 {
 
-    private function getDefaultOptions()
+    private function getBaseCredentials()
     {
         return [
-            'clientId'      => 'myappid',
-            'clientSecret'  => 'topsykretz',
-            'redirectUri'   => 'http://example.com',
-            'userAgent'     => 'platform:app_id:version (by /u/username)',
-            'scopes'        => ['identity', 'read'],
+            'userAgent' => 'phpunit:oauth2:test (by /u/oauth2)',
+            'scopes'    => ['identity', 'read'],
         ];
     }
 
-    private function createProvider($options = [])
+    /**
+     * Please note that these credentials are for test purposes only 
+     * and don't belong to a proper application. Therefore it's okay
+     * to specify them here out in the open, where it would obviously
+     * be a very bad idea otherwise.
+     */
+    private function getCredentials($type = 'web')
     {
-        return new Reddit(array_merge($this->getDefaultOptions(), $options));
+        return array_merge($this->getBaseCredentials(), [
+            
+            // Confidential clients (web apps / scripts) not acting on 
+            // behalf of one or more logged out users.
+            'client_credentials' => [
+                'clientId'       => 'ospXZGFbJBbzmw',
+                'clientSecret'   => 'zskgYfF2VekUSEnr-OM3BVj2TE4',
+            ],
+
+            // Scripts for personal use with username and password login.
+            'password' => [
+                'clientId'       => 'ospXZGFbJBbzmw',
+                'clientSecret'   => 'zskgYfF2VekUSEnr-OM3BVj2TE4',
+                'username'       => 'oauth2',
+                'password'       => 'password',
+            ],
+
+            // Installed app types (as these apps are considered 
+            // "non-confidential", have no secret, and thus, are 
+            // ineligible for client_credentials grant.
+            //
+            // Other apps acting on behalf of one or more "logged out" users.
+            'installed_client'   => [
+                'clientId'       => 'lIlSPFknwHOTCg',
+            ],
+
+            // Standard web redirect flow -- which sadly we can't test here.
+            'web' => [
+                'clientId'       => '5OactXQ9n4qqmA',
+                'clientSecret'   => '75_bUPzaR_Hc3AXwwpXmzFvOAtw',
+                'redirectUri'    => 'http://example.com',
+            ],
+
+        ][$type]);
     }
 
-    protected function setUp()
+    private function createProvider($credentials)
     {
-        $this->provider = $this->createProvider();
+        return new Reddit($credentials);
+    }
+
+    private function assertValidAccessToken(AccessToken $token)
+    {
+        $this->assertObjectHasAttribute('accessToken', $token);
+        $this->assertObjectHasAttribute('expires', $token);
+
+        $this->assertRegExp("~\d{10,}~", "$token->expires");
+        $this->assertTrue( ! empty($token->accessToken));
     }
 
     private function _testGetAuthorizationUrl($options = [])
     {
-        $url = $this->provider->getAuthorizationUrl($options);
+        $credentials = $this->getCredentials();
+        $provider = $this->createProvider($credentials);
+
+        $url = $provider->getAuthorizationUrl($options);
         extract(parse_url($url));
 
         $this->assertEquals('https', $scheme);
@@ -39,10 +87,9 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('/api/v1/authorize', $path);
 
         parse_str($query);
-        $expected = $this->getDefaultOptions();
 
-        $this->assertEquals($client_id,         $expected['clientId']);
-        $this->assertEquals($redirect_uri,      $expected['redirectUri']);
+        $this->assertEquals($client_id,         $credentials['clientId']);
+        $this->assertEquals($redirect_uri,      $credentials['redirectUri']);
         $this->assertEquals($response_type,     'code');
         $this->assertEquals($approval_prompt,   'auto');
         $this->assertEquals($scope,             'identity,read');
@@ -65,30 +112,26 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
     public function testGetHeaders()
     {
-        extract($this->getDefaultOptions());
-        $auth = base64_encode("{$clientId}:{$clientSecret}");
+        $credentials = $this->getCredentials();
+        $auth = base64_encode(
+            "{$credentials['clientId']}:{$credentials['clientSecret']}");
 
         $expected = [
-            "User-Agent"    => "platform:app_id:version (by /u/username)",
+            "User-Agent"    => $credentials['userAgent'],
             "Authorization" => "Basic $auth"
         ];
-        $this->assertEquals($expected, $this->provider->getHeaders());
-    }
 
-    public function testUrlAccessToken()
-    {
-        $url = $this->provider->urlAccessToken();
-        extract(parse_url($url));
-
-        $this->assertEquals('https', $scheme);
-        $this->assertEquals('ssl.reddit.com', $host);
-        $this->assertEquals('/api/v1/access_token', $path);
+        $provider = $this->createProvider($credentials);
+        $this->assertEquals($expected, $provider->getHeaders());
     }
 
     public function testUrlUserDetails()
     {
+        $credentials = $this->getCredentials();
         $token = $this->createFakeAccessToken();
-        $url = $this->provider->urlUserDetails($token);
+        $provider = $this->createProvider($credentials);
+
+        $url = $provider->urlUserDetails($token);
         extract(parse_url($url));
 
         $this->assertEquals('https', $scheme);
@@ -98,13 +141,15 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
     public function testUserDetails()
     {
+        $credentials = $this->getCredentials();
         $token = $this->createFakeAccessToken();
         $request = [
             'test' => true,
             'data' => [1, 2, 3],
         ];
 
-        $userData = $this->provider->userDetails($request, $token);
+        $provider = $this->createProvider($credentials);
+        $userData = $provider->userDetails($request, $token);
         $this->assertEquals($request, $userData);
     }
 
@@ -124,20 +169,22 @@ class RedditTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetHeadersInvalidUserAgent()
     {
-        $invalidProvider = $this->createProvider([
-            "userAgent" => "invalidUserAgent!!",
-        ]);
+        $credentials = $this->getCredentials();
+        $credentials['userAgent'] = 'invalid';
 
+        $invalidProvider = $this->createProvider($credentials);
         $invalidProvider->getHeaders();
     }
 
     public function testGetUserAgentFromServer()
     {
-        $_SERVER['HTTP_USER_AGENT'] = $this->getDefaultOptions()['userAgent'];
+        $credentials = $this->getCredentials();
+        $userAgent = $credentials['userAgent'];
+        $_SERVER['HTTP_USER_AGENT'] = $userAgent;
 
-        $provider = $this->createProvider([
-            'userAgent' => ''
-        ]);
+        $credentials['userAgent'] = '';
+
+        $provider = $this->createProvider($credentials);
 
         $this->assertFalse(!! $provider->userAgent);
         $provider->getHeaders();
@@ -146,17 +193,104 @@ class RedditTest extends \PHPUnit_Framework_TestCase
     public function testGetHeadersWithToken()
     {
         $accessToken = md5(time());
-
         $token = $this->createFakeAccessToken([
             'access_token' => $accessToken,
             'expires'      => time() + 3600
         ]);
 
+        $credentials = $this->getCredentials();
         $expected = [
-            "User-Agent"    => "platform:app_id:version (by /u/username)",
+            "User-Agent"    => $credentials['userAgent'],
             "Authorization" => "bearer $accessToken"
         ];
 
-        $this->assertEquals($expected, $this->provider->getHeaders($token));
+        $provider = $this->createProvider($credentials);
+        $this->assertEquals($expected, $provider->getHeaders($token));
+    }
+
+    public function testGetAccessTokenUsingClientCredentials()
+    {
+        $credentials = $this->getCredentials('client_credentials');
+        $provider = $this->createProvider($credentials);
+        $token = $provider->getAccessToken('client_credentials');
+        $this->assertValidAccessToken($token);
+    }
+
+    public function testGetAccessTokenUsingUsernameAndPassword()
+    {
+        $credentials = $this->getCredentials('password');
+        $provider = $this->createProvider($credentials);
+        $token = $provider->getAccessToken('password', [
+            'username' => $credentials['username'],
+            'password' => $credentials['password']
+        ]);
+
+        $this->assertValidAccessToken($token);
+    }
+
+    public function testGetAccessTokenUsingImplicitFlow()
+    {
+        $credentials = $this->getCredentials('installed_client');
+        $provider = $this->createProvider($credentials);
+        $token = $provider->getAccessToken('installed_client', [
+            'device_id' => uniqid('', true),
+        ]);
+
+        $this->assertValidAccessToken($token);
+    }
+
+    private function _testDeviceId($options = [])
+    {
+        $credentials = $this->getCredentials('installed_client');
+        $provider = $this->createProvider($credentials);
+        $token = $provider->getAccessToken('installed_client', $options);
+    }
+
+    /**
+     * @expectedException BadMethodCallException
+     */
+    public function testGetAccessTokenUsingImplicitFlowWithoutDeviceId()
+    {
+        $this->_testDeviceId();
+    }
+
+    /**
+     * @expectedException BadMethodCallException
+     */
+    public function testGetAccessTokenUsingImplicitFlowWithBlankDeviceId()
+    {
+        $this->_testDeviceId([
+            "device_id" => "" // equivalent to not provided
+        ]);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testGetAccessTokenUsingImplicitFlowWithShortDeviceId()
+    {
+        $this->_testDeviceId([
+            "device_id" => "abc" // too short
+        ]);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testGetAccessTokenUsingImplicitFlowWithInvalidDeviceId()
+    {
+        $this->_testDeviceId([
+            "device_id" => str_repeat("☕", 24), // has to be ASCII
+        ]);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testGetAccessTokenUsingImplicitFlowWithLongDeviceId()
+    {
+        $this->_testDeviceId([
+            "device_id" => md5(""), // too long
+        ]);
     }
 }
