@@ -44,7 +44,7 @@ class Reddit extends AbstractProvider
      */
     public function urlUserDetails(AccessToken $token)
     {
-        return "https://oauth.reddit.com/api/v1/me.json";
+        return "https://oauth.reddit.com/api/v1/me";
     }
 
     /**

@@ -32,7 +32,6 @@ class RedditTest extends \PHPUnit_Framework_TestCase
     private function _testGetAuthorizationUrl($options = [])
     {
         $url = $this->provider->getAuthorizationUrl($options);
-
         extract(parse_url($url));
 
         $this->assertEquals('https', $scheme);
@@ -76,6 +75,49 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $this->provider->getHeaders());
     }
 
+    public function testUrlAccessToken()
+    {
+        $url = $this->provider->urlAccessToken();
+        extract(parse_url($url));
+
+        $this->assertEquals('https', $scheme);
+        $this->assertEquals('ssl.reddit.com', $host);
+        $this->assertEquals('/api/v1/access_token', $path);
+    }
+
+    public function testUrlUserDetails()
+    {
+        $token = $this->createFakeAccessToken();
+        $url = $this->provider->urlUserDetails($token);
+        extract(parse_url($url));
+
+        $this->assertEquals('https', $scheme);
+        $this->assertEquals('oauth.reddit.com', $host);
+        $this->assertEquals('/api/v1/me', $path);
+    }
+
+    public function testUserDetails()
+    {
+        $token = $this->createFakeAccessToken();
+        $request = [
+            'test' => true,
+            'data' => [1, 2, 3],
+        ];
+
+        $userData = $this->provider->userDetails($request, $token);
+        $this->assertEquals($request, $userData);
+    }
+
+    private function createFakeAccessToken($data = [])
+    {
+        if ( ! $data) {
+            $data = [
+                'access_token' => md5(time()),
+                'expires'      => time() + 3600
+            ];
+        }
+        return new AccessToken($data);
+    }
 
     /**
      * @expectedException InvalidArgumentException
@@ -89,11 +131,23 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $invalidProvider->getHeaders();
     }
 
+    public function testGetUserAgentFromServer()
+    {
+        $_SERVER['HTTP_USER_AGENT'] = $this->getDefaultOptions()['userAgent'];
+
+        $provider = $this->createProvider([
+            'userAgent' => ''
+        ]);
+
+        $this->assertFalse(!! $provider->userAgent);
+        $provider->getHeaders();
+    }
+
     public function testGetHeadersWithToken()
     {
         $accessToken = md5(time());
 
-        $token = new AccessToken([
+        $token = $this->createFakeAccessToken([
             'access_token' => $accessToken,
             'expires'      => time() + 3600
         ]);
