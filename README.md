@@ -1,12 +1,11 @@
 # Reddit OAuth2 Provider
 
 [![Build Status](https://img.shields.io/travis/rtheunissen/oauth2-reddit.svg?style=flat-square)](https://travis-ci.org/rtheunissen/oauth2-reddit)
-[![Join the chat at https://gitter.im/rtheunissen/oauth2-reddit](https://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg?style=flat-square)](https://gitter.im/rtheunissen/oauth2-reddit)
 [![Scrutinizer](https://img.shields.io/scrutinizer/g/rtheunissen/oauth2-reddit.svg?style=flat-square)]()
 [![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/rtheunissen/oauth2-reddit.svg?style=flat-square)]()
 [![Latest Version](https://img.shields.io/packagist/v/rtheunissen/oauth2-reddit.svg?style=flat-square)](https://packagist.org/packages/rtheunissen/oauth2-reddit)
 [![License](https://img.shields.io/packagist/l/rtheunissen/oauth2-reddit.svg?style=flat-square)](https://packagist.org/packages/rtheunissen/oauth2-reddit)
-
+[![Join the chat at https://gitter.im/rtheunissen/oauth2-reddit](https://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg?style=flat-square)](https://gitter.im/rtheunissen/oauth2-reddit)
 
 This package provides Reddit integration for [thephpleague/oauth2-client](https://github.com/thephpleague/oauth2-client).
 
