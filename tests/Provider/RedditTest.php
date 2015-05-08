@@ -126,43 +126,15 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $provider->getHeaders());
     }
 
-    public function testUrlUserDetails()
-    {
-        $credentials = $this->getCredentials();
-        $token = $this->createFakeAccessToken();
-        $provider = $this->createProvider($credentials);
-
-        $url = $provider->urlUserDetails($token);
-        extract(parse_url($url));
-
-        $this->assertEquals('https', $scheme);
-        $this->assertEquals('oauth.reddit.com', $host);
-        $this->assertEquals('/api/v1/me', $path);
-    }
-
     public function testUserDetails()
     {
-        $credentials = $this->getCredentials();
-        $token = $this->createFakeAccessToken();
-        $request = [
-            'test' => true,
-            'data' => [1, 2, 3],
-        ];
-
+        $credentials = $this->getCredentials('password');
         $provider = $this->createProvider($credentials);
-        $userData = $provider->userDetails($request, $token);
-        $this->assertEquals($request, $userData);
-    }
-
-    private function createFakeAccessToken($data = [])
-    {
-        if ( ! $data) {
-            $data = [
-                'access_token' => md5(time()),
-                'expires'      => time() + 3600
-            ];
-        }
-        return new AccessToken($data);
+        $token = $provider->getAccessToken('password', [
+            'username' => $credentials['username'],
+            'password' => $credentials['password']
+        ]);
+        $userData = $provider->getUserDetails($token);
     }
 
     /**
@@ -194,7 +166,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
     public function testGetHeadersWithToken()
     {
         $accessToken = md5(time());
-        $token = $this->createFakeAccessToken([
+        $token = new AccessToken([
             'access_token' => $accessToken,
             'expires'      => time() + 3600
         ]);
