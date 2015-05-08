@@ -101,7 +101,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
             $this->assertFalse(isset($duration));
         }
 
-        $this->assertRegExp('~[a-zA-Z0-9]{32}~', $state);
+        $this->assertTrue(!! $state);
     }
 
     public function testGetAuthorizationUrl()
@@ -150,7 +150,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         ];
 
         $provider = $this->createProvider($credentials);
-        $userData = $provider->userDetails($request, $token);
+        $userData = $provider->getUserDetails($token);
         $this->assertEquals($request, $userData);
     }
 

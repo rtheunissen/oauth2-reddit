@@ -1,9 +1,10 @@
 {
     "name": "rtheunissen/oauth2-reddit",
     "description": "Reddit OAuth2 provider for league/oauth2-client",
+    "minimum-stability": "dev",
     "require": {
         "php": ">=5.4.0",
-        "league/oauth2-client": "0.11.*",
+        "league/oauth2-client": "1.0.x-dev",
         "phpunit/phpunit": "~4.0"
     },
     "autoload": {

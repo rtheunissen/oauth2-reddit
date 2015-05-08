@@ -51,7 +51,31 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
-    public function userDetails($response, AccessToken $token)
+    // public function getUserDetails($response, AccessToken $token)
+    // {
+        // return $response;
+    // }
+// 
+
+    /**
+     * Check a provider response for errors.
+     *
+     * @throws IdentityProviderException
+     * @param  array $response
+     * @return void
+     */
+    protected function checkResponse(array $response)
+    {
+
+    }
+    /**
+     * Generate a user object from a successful user details request.
+     *
+     * @param object $response
+     * @param AccessToken $token
+     * @return League\OAuth2\Client\Provider\UserInterface
+     */
+    protected function prepareUserDetails(array $response, AccessToken $token)
     {
         return $response;
     }
@@ -111,7 +135,7 @@ class Reddit extends AbstractProvider
      *
      * @see https://github.com/reddit/reddit/wiki/OAuth2
      */
-    public function getAccessToken($grant = "authorization_code", $params = [])
+    public function getAccessToken($grant = "authorization_code", array $params = [])
     {
         // Allow Reddit-specific 'installed_client' to be specified as a string,
         // keeping consistent with the other grant types.
@@ -125,7 +149,7 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
-    public function getAuthorizationUrl($options = [])
+    public function getAuthorizationUrl(array $options = [])
     {
         $url = parent::getAuthorizationUrl();
 
