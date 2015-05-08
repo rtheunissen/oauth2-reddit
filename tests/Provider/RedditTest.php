@@ -24,7 +24,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
      */
     private function getCredentials($type = 'web')
     {
-        return array_merge($this->getBaseCredentials(), [
+        $credentials = [
             
             // Confidential clients (web apps / scripts) not acting on 
             // behalf of one or more logged out users.
@@ -56,8 +56,9 @@ class RedditTest extends \PHPUnit_Framework_TestCase
                 'clientSecret'   => '75_bUPzaR_Hc3AXwwpXmzFvOAtw',
                 'redirectUri'    => 'http://example.com',
             ],
+        ];
 
-        ][$type]);
+        return array_merge($this->getBaseCredentials(), $credentials[$type]);
     }
 
     private function createProvider($credentials)
