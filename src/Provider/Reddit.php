@@ -4,7 +4,6 @@ namespace Rudolf\OAuth2\Client\Provider;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
-
 use Rudolf\OAuth2\Client\Grant\InstalledClient;
 use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
 
@@ -46,15 +45,6 @@ class Reddit extends AbstractProvider
     {
         return "https://oauth.reddit.com/api/v1/me";
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    // public function getUserDetails($response, AccessToken $token)
-    // {
-        // return $response;
-    // }
-//
 
     /**
      * Check a provider response for errors.

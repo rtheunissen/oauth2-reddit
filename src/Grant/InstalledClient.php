@@ -10,17 +10,21 @@ use League\OAuth2\Client\Token\AccessToken;
  */
 class InstalledClient extends AbstractGrant
 {
-	public function __toString()
-	{
-		return 'https://oauth.reddit.com/grants/installed_client';
-	}
+    public function __toString()
+    {
+        return 'https://oauth.reddit.com/grants/installed_client';
+    }
 
+<<<<<<< HEAD
 	/**
      * Get a list of all required request parameters.
      *
      * @return array
      */
     protected function getRequiredRequestParams()
+=======
+    public function prepRequestParams($defaultParams, $params)
+>>>>>>> master
     {
     	return ['device_id'];
     }
@@ -31,7 +35,7 @@ class InstalledClient extends AbstractGrant
 
         // device_id has to be a 20-30 character ASCII string
         if ( ! preg_match("/^[[:ascii:]]{20,30}$/", $params["device_id"])) {
-        	throw new \InvalidArgumentException("Invalid device_id");
+          throw new \InvalidArgumentException("Invalid device_id");
         }
 
         return $params;

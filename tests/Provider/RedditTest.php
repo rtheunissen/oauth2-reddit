@@ -8,6 +8,15 @@ use League\OAuth2\Client\Token\AccessToken;
 class RedditTest extends \PHPUnit_Framework_TestCase
 {
 
+    private function constToCamel($name)
+    {
+        return lcfirst(
+            str_replace(" ", "", ucwords(strtolower(
+                str_replace("_", " ", $name)
+            )))
+        );
+    }
+
     private function getBaseCredentials()
     {
         return [
@@ -16,49 +25,49 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+    private function getCredentialsFromEnv($type)
+    {
+        $credentials = [];
+        foreach ($_ENV as $key => $value) {
+            $prefix = strtoupper("reddit_{$type}_");
+
+            if (strpos($key, $prefix) === 0) {
+                $key = substr($key, strlen($prefix));
+                $key = $this->constToCamel($key);
+                $credentials[$key] = $value;
+            }
+        }
+        return $credentials;
+    }
+
     /**
      * Please note that these credentials are for test purposes only
      * and don't belong to a proper application. Therefore it's okay
      * to specify them here out in the open, where it would obviously
      * be a very bad idea otherwise.
      */
-    private function getCredentials($type = 'web')
+    private function getCredentials($type = null)
     {
-        $credentials = [
+        if ($type === null) {
+            $credentials = [
+                'clientId'      => '_ID_',
+                'clientSecret'  => '_SECRET_',
+                'redirectUri'   => '_URI_',
+            ];
+        } else {
+            $env = __DIR__ . "/env.json";
 
-            // Confidential clients (web apps / scripts) not acting on
-            // behalf of one or more logged out users.
-            'client_credentials' => [
-                'clientId'       => 'ospXZGFbJBbzmw',
-                'clientSecret'   => 'zskgYfF2VekUSEnr-OM3BVj2TE4',
-            ],
+            if (is_file($env) && is_readable($env)) {
+                $credentials = json_decode(file_get_contents($env), true);
+                $credentials = $credentials[$type];
+            } else if (@getenv('TRAVIS')) {
+                $credentials = $this->getCredentialsFromEnv($type);
+            } else {
+                $this->markTestSkipped();
+            }
+        }
 
-            // Scripts for personal use with username and password login.
-            'password' => [
-                'clientId'       => 'ospXZGFbJBbzmw',
-                'clientSecret'   => 'zskgYfF2VekUSEnr-OM3BVj2TE4',
-                'username'       => 'oauth2',
-                'password'       => 'password',
-            ],
-
-            // Installed app types (as these apps are considered
-            // "non-confidential", have no secret, and thus, are
-            // ineligible for client_credentials grant.
-            //
-            // Other apps acting on behalf of one or more "logged out" users.
-            'installed_client'   => [
-                'clientId'       => 'lIlSPFknwHOTCg',
-            ],
-
-            // Standard web redirect flow -- which sadly we can't test here.
-            'web' => [
-                'clientId'       => '5OactXQ9n4qqmA',
-                'clientSecret'   => '75_bUPzaR_Hc3AXwwpXmzFvOAtw',
-                'redirectUri'    => 'http://example.com',
-            ],
-        ];
-
-        return array_merge($this->getBaseCredentials(), $credentials[$type]);
+        return array_merge($this->getBaseCredentials(), $credentials);
     }
 
     private function createProvider($credentials)
@@ -101,7 +110,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
             $this->assertFalse(isset($duration));
         }
 
-        $this->assertTrue(!! $state);
+        $this->assertRegExp('~[a-zA-Z0-9]{32}~', $state);
     }
 
     public function testGetAuthorizationUrl()
@@ -126,17 +135,6 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $provider->getHeaders());
     }
 
-    public function testUserDetails()
-    {
-        $credentials = $this->getCredentials('password');
-        $provider = $this->createProvider($credentials);
-        $token = $provider->getAccessToken('password', [
-            'username' => $credentials['username'],
-            'password' => $credentials['password']
-        ]);
-        $userData = $provider->getUserDetails($token);
-    }
-
     /**
      * @expectedException InvalidArgumentException
      */
@@ -158,6 +156,8 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $credentials['userAgent'] = '';
 
         $provider = $this->createProvider($credentials);
+
+        $this->assertFalse(!! $provider->userAgent);
         $provider->getHeaders();
     }
 
@@ -177,6 +177,17 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
         $provider = $this->createProvider($credentials);
         $this->assertEquals($expected, $provider->getHeaders($token));
+    }
+
+    public function testUserDetails()
+    {
+        $credentials = $this->getCredentials('password');
+        $provider = $this->createProvider($credentials);
+        $token = $provider->getAccessToken('password', [
+            'username' => $credentials['username'],
+            'password' => $credentials['password']
+        ]);
+        $userData = $provider->getUserDetails($token);
     }
 
     public function testGetAccessTokenUsingClientCredentials()
