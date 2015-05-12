@@ -34,8 +34,6 @@ class RedditTest extends \PHPUnit_Framework_TestCase
             if (strpos($key, $prefix) === 0) {
                 $key = substr($key, strlen($prefix));
                 $key = $this->constToCamel($key);
-
-                var_dump("Setting $key");
                 $credentials[$key] = $value;
             }
         }
@@ -50,6 +48,9 @@ class RedditTest extends \PHPUnit_Framework_TestCase
      */
     private function getCredentials($type = null)
     {
+
+
+
         if ($type === null) {
             $credentials = [
                 'clientId'      => '_ID_',
@@ -57,12 +58,16 @@ class RedditTest extends \PHPUnit_Framework_TestCase
                 'redirectUri'   => '_URI_',
             ];
         } else {
+
+            var_dump(array_keys($_ENV));
+
+
             $env = __DIR__ . "/env.json";
 
             if (is_file($env) && is_readable($env)) {
                 $credentials = json_decode(file_get_contents($env), true);
                 $credentials = $credentials[$type];
-            } else if (@getenv('TRAVIS')) {
+            } else if (isset($_ENV['TRAVIS'])) {
                 $credentials = $this->getCredentialsFromEnv($type);
             } else {
                 $this->markTestSkipped();
@@ -183,9 +188,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
     public function testUserDetails()
     {
-        echo "#\n";
         $credentials = $this->getCredentials('password');
-        echo "#\n";
         $provider = $this->createProvider($credentials);
         $token = $provider->getAccessToken('password', [
             'username' => $credentials['username'],
