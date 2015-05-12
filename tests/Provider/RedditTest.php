@@ -48,24 +48,27 @@ class RedditTest extends \PHPUnit_Framework_TestCase
      */
     private function getCredentials($type = null)
     {
-
-
-
+        // For tests that don't require real config
         if ($type === null) {
             $credentials = [
                 'clientId'      => '_ID_',
                 'clientSecret'  => '_SECRET_',
                 'redirectUri'   => '_URI_',
             ];
+
         } else {
 
+            // Try to use local env config
             $env = __DIR__ . "/env.json";
-
             if (is_file($env) && is_readable($env)) {
                 $credentials = json_decode(file_get_contents($env), true);
                 $credentials = $credentials[$type];
+
+            // Check if Travis is testing, in which case use env vars
             } else if (isset($_SERVER['TRAVIS'])) {
                 $credentials = $this->getCredentialsFromEnv($type);
+
+            // No config, skip the test
             } else {
                 $this->markTestSkipped();
             }
