@@ -48,6 +48,8 @@ class RedditTest extends \PHPUnit_Framework_TestCase
      */
     private function getCredentials($type = null)
     {
+        var_dump(isset($_ENV['TRAVIS']), @$_ENV['TRAVIS']);
+
         if ($type === null) {
             $credentials = [
                 'clientId'      => '_ID_',
