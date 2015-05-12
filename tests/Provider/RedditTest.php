@@ -17,7 +17,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Please note that these credentials are for test purposes only 
+     * Please note that these credentials are for test purposes only
      * and don't belong to a proper application. Therefore it's okay
      * to specify them here out in the open, where it would obviously
      * be a very bad idea otherwise.
@@ -25,8 +25,8 @@ class RedditTest extends \PHPUnit_Framework_TestCase
     private function getCredentials($type = 'web')
     {
         $credentials = [
-            
-            // Confidential clients (web apps / scripts) not acting on 
+
+            // Confidential clients (web apps / scripts) not acting on
             // behalf of one or more logged out users.
             'client_credentials' => [
                 'clientId'       => 'ospXZGFbJBbzmw',
@@ -41,8 +41,8 @@ class RedditTest extends \PHPUnit_Framework_TestCase
                 'password'       => 'password',
             ],
 
-            // Installed app types (as these apps are considered 
-            // "non-confidential", have no secret, and thus, are 
+            // Installed app types (as these apps are considered
+            // "non-confidential", have no secret, and thus, are
             // ineligible for client_credentials grant.
             //
             // Other apps acting on behalf of one or more "logged out" users.
@@ -158,8 +158,6 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $credentials['userAgent'] = '';
 
         $provider = $this->createProvider($credentials);
-
-        $this->assertFalse(!! $provider->userAgent);
         $provider->getHeaders();
     }
 

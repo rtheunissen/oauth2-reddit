@@ -6,23 +6,22 @@ use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 
 use Rudolf\OAuth2\Client\Grant\InstalledClient;
+use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
 
 use InvalidArgumentException;
 
 class Reddit extends AbstractProvider
 {
+
+    use BearerAuthorizationTrait;
+
     /**
      * User agent string required by Reddit
      * Format <platform>:<app ID>:<version string> (by /u/<reddit username>)
      *
      * @see https://github.com/reddit/reddit/wiki/API
      */
-    public $userAgent = "";
-
-    /**
-     * {@inheritDoc}
-     */
-    public $authorizationHeader = "bearer";
+    protected $userAgent = "";
 
     /**
      * {@inheritDoc}
@@ -55,7 +54,7 @@ class Reddit extends AbstractProvider
     // {
         // return $response;
     // }
-// 
+//
 
     /**
      * Check a provider response for errors.
@@ -96,6 +95,13 @@ class Reddit extends AbstractProvider
         return $_SERVER["HTTP_USER_AGENT"];
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultScopes()
+    {
+        return ['identity'];
+    }
 
     /**
      * Validates that the user agent follows the Reddit API guide.
@@ -110,10 +116,7 @@ class Reddit extends AbstractProvider
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getHeaders($token = null)
+    protected function getDefaultHeaders($token = null)
     {
         $this->validateUserAgent();
 
@@ -127,7 +130,7 @@ class Reddit extends AbstractProvider
             $headers["Authorization"] = "Basic $auth";
         }
 
-        return array_merge(parent::getHeaders($token), $headers);
+        return $headers;
     }
 
     /**
