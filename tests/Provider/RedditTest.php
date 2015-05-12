@@ -34,6 +34,8 @@ class RedditTest extends \PHPUnit_Framework_TestCase
             if (strpos($key, $prefix) === 0) {
                 $key = substr($key, strlen($prefix));
                 $key = $this->constToCamel($key);
+
+                var_dump("Setting $key");
                 $credentials[$key] = $value;
             }
         }
@@ -181,7 +183,9 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
     public function testUserDetails()
     {
+        echo "#\n";
         $credentials = $this->getCredentials('password');
+        echo "#\n";
         $provider = $this->createProvider($credentials);
         $token = $provider->getAccessToken('password', [
             'username' => $credentials['username'],
