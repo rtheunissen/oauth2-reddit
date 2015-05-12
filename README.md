@@ -1,6 +1,6 @@
 # Reddit OAuth2 Provider
 
-[![Build Status](https://img.shields.io/travis/rtheunissen/oauth2-reddit.svg?style=flat-square)](https://travis-ci.org/rtheunissen/oauth2-reddit)
+[![Build Status](https://img.shields.io/travis/rtheunissen/oauth2-reddit.svg?style=flat-square&branch=master)](https://travis-ci.org/rtheunissen/oauth2-reddit)
 [![Scrutinizer](https://img.shields.io/scrutinizer/g/rtheunissen/oauth2-reddit.svg?style=flat-square)]()
 [![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/rtheunissen/oauth2-reddit.svg?style=flat-square)]()
 [![Latest Version](https://img.shields.io/packagist/v/rtheunissen/oauth2-reddit.svg?style=flat-square)](https://packagist.org/packages/rtheunissen/oauth2-reddit)
