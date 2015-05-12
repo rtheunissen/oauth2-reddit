@@ -8,36 +8,12 @@ use League\OAuth2\Client\Token\AccessToken;
 class RedditTest extends \PHPUnit_Framework_TestCase
 {
 
-    private function constToCamel($name)
-    {
-        return lcfirst(
-            str_replace(" ", "", ucwords(strtolower(
-                str_replace("_", " ", $name)
-            )))
-        );
-    }
-
     private function getBaseCredentials()
     {
         return [
             'userAgent' => 'phpunit:oauth2:test (by /u/oauth2)',
             'scopes'    => ['identity', 'read'],
         ];
-    }
-
-    private function getCredentialsFromEnv($type)
-    {
-        $credentials = [];
-        foreach ($_SERVER as $key => $value) {
-            $prefix = strtoupper("reddit_{$type}_");
-
-            if (strpos($key, $prefix) === 0) {
-                $key = substr($key, strlen($prefix));
-                $key = $this->constToCamel($key);
-                $credentials[$key] = $value;
-            }
-        }
-        return $credentials;
     }
 
     /**
@@ -48,27 +24,18 @@ class RedditTest extends \PHPUnit_Framework_TestCase
      */
     private function getCredentials($type = null)
     {
-        // For tests that don't require real config
         if ($type === null) {
             $credentials = [
                 'clientId'      => '_ID_',
                 'clientSecret'  => '_SECRET_',
                 'redirectUri'   => '_URI_',
             ];
-
         } else {
-
-            // Try to use local env config
             $env = __DIR__ . "/env.json";
+
             if (is_file($env) && is_readable($env)) {
                 $credentials = json_decode(file_get_contents($env), true);
                 $credentials = $credentials[$type];
-
-            // Check if Travis is testing, in which case use env vars
-            } else if (isset($_SERVER['TRAVIS'])) {
-                $credentials = $this->getCredentialsFromEnv($type);
-
-            // No config, skip the test
             } else {
                 $this->markTestSkipped();
             }
