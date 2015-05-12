@@ -48,9 +48,6 @@ class RedditTest extends \PHPUnit_Framework_TestCase
      */
     private function getCredentials($type = null)
     {
-        var_dump(isset($_ENV['TRAVIS']), @$_ENV['TRAVIS'], @getenv('TRAVIS'));
-        var_dump(array_keys($_ENV));
-
         if ($type === null) {
             $credentials = [
                 'clientId'      => '_ID_',
@@ -63,7 +60,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
             if (is_file($env) && is_readable($env)) {
                 $credentials = json_decode(file_get_contents($env), true);
                 $credentials = $credentials[$type];
-            } else if (isset($_ENV['TRAVIS'])) {
+            } else if (@getenv('TRAVIS')) {
                 $credentials = $this->getCredentialsFromEnv($type);
             } else {
                 $this->markTestSkipped();
