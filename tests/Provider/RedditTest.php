@@ -28,7 +28,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
     private function getCredentialsFromEnv($type)
     {
         $credentials = [];
-        foreach ($_ENV as $key => $value) {
+        foreach ($_SERVER as $key => $value) {
             $prefix = strtoupper("reddit_{$type}_");
 
             if (strpos($key, $prefix) === 0) {
@@ -59,15 +59,12 @@ class RedditTest extends \PHPUnit_Framework_TestCase
             ];
         } else {
 
-            var_dump(array_keys($_ENV));
-
-
             $env = __DIR__ . "/env.json";
 
             if (is_file($env) && is_readable($env)) {
                 $credentials = json_decode(file_get_contents($env), true);
                 $credentials = $credentials[$type];
-            } else if (isset($_ENV['TRAVIS'])) {
+            } else if (isset($_SERVER['TRAVIS'])) {
                 $credentials = $this->getCredentialsFromEnv($type);
             } else {
                 $this->markTestSkipped();
