@@ -1,3 +1,5 @@
 vendor/
 composer.lock
+env.json
+.encrypt
 .DS_Store

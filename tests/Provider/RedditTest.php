@@ -16,47 +16,37 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+    private function getCredentialsFromEnv($type)
+    {
+        $credentials = [];
+        foreach ($_ENV as $key => $value) {
+            $prefix = "reddit_$type";
+
+            if (strpos($key, $prefix) === 0) {
+                $credentials[substr($key, strlen($prefix))] = $value;
+            }
+        }
+        return $credentials;
+    }
+
     /**
-     * Please note that these credentials are for test purposes only 
+     * Please note that these credentials are for test purposes only
      * and don't belong to a proper application. Therefore it's okay
      * to specify them here out in the open, where it would obviously
      * be a very bad idea otherwise.
      */
     private function getCredentials($type = 'web')
     {
-        $credentials = [
-            
-            // Confidential clients (web apps / scripts) not acting on 
-            // behalf of one or more logged out users.
-            'client_credentials' => [
-                'clientId'       => 'ospXZGFbJBbzmw',
-                'clientSecret'   => 'zskgYfF2VekUSEnr-OM3BVj2TE4',
-            ],
+        $env = __DIR__ . "/env.json";
 
-            // Scripts for personal use with username and password login.
-            'password' => [
-                'clientId'       => 'ospXZGFbJBbzmw',
-                'clientSecret'   => 'zskgYfF2VekUSEnr-OM3BVj2TE4',
-                'username'       => 'oauth2',
-                'password'       => 'password',
-            ],
-
-            // Installed app types (as these apps are considered 
-            // "non-confidential", have no secret, and thus, are 
-            // ineligible for client_credentials grant.
-            //
-            // Other apps acting on behalf of one or more "logged out" users.
-            'installed_client'   => [
-                'clientId'       => 'lIlSPFknwHOTCg',
-            ],
-
-            // Standard web redirect flow -- which sadly we can't test here.
-            'web' => [
-                'clientId'       => '5OactXQ9n4qqmA',
-                'clientSecret'   => '75_bUPzaR_Hc3AXwwpXmzFvOAtw',
-                'redirectUri'    => 'http://example.com',
-            ],
-        ];
+        if (is_file($env)) {
+            $credentials = json_decode(file_get_contents($env), true);
+        } else if (@$_ENV['TRAVIS']) {
+            // get credentials from env
+            $credentials = $this->getCredentialsFromEnv($type);
+        } else {
+            $this->markTestSkipped();
+        }
 
         return array_merge($this->getBaseCredentials(), $credentials[$type]);
     }
