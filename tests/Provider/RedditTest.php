@@ -35,20 +35,29 @@ class RedditTest extends \PHPUnit_Framework_TestCase
      * to specify them here out in the open, where it would obviously
      * be a very bad idea otherwise.
      */
-    private function getCredentials($type = 'web')
+    private function getCredentials($type = null)
     {
-        $env = __DIR__ . "/env.json";
-
-        if (is_file($env)) {
-            $credentials = json_decode(file_get_contents($env), true);
-        } else if (@$_ENV['TRAVIS']) {
-            // get credentials from env
-            $credentials = $this->getCredentialsFromEnv($type);
+        if ($type === null) {
+            $credentials = [
+                'clientId'      => '_ID_',
+                'clientSecret'  => '_SECRET_',
+                'redirectUri'   => '_URI_',
+            ];
         } else {
-            $this->markTestSkipped();
+            $env = __DIR__ . "/env.json";
+
+            if (is_file($env)) {
+                $credentials = json_decode(file_get_contents($env), true);
+                $credentials = $credentials[$type];
+            } else if (isset($_ENV['TRAVIS'])) {
+                // get credentials from env
+                $credentials = $this->getCredentialsFromEnv($type);
+            } else {
+                $this->markTestSkipped();
+            }
         }
 
-        return array_merge($this->getBaseCredentials(), $credentials[$type]);
+        return array_merge($this->getBaseCredentials(), $credentials);
     }
 
     private function createProvider($credentials)
@@ -116,17 +125,6 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $provider->getHeaders());
     }
 
-    public function testUserDetails()
-    {
-        $credentials = $this->getCredentials('password');
-        $provider = $this->createProvider($credentials);
-        $token = $provider->getAccessToken('password', [
-            'username' => $credentials['username'],
-            'password' => $credentials['password']
-        ]);
-        $userData = $provider->getUserDetails($token);
-    }
-
     /**
      * @expectedException InvalidArgumentException
      */
@@ -169,6 +167,17 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
         $provider = $this->createProvider($credentials);
         $this->assertEquals($expected, $provider->getHeaders($token));
+    }
+
+    public function testUserDetails()
+    {
+        $credentials = $this->getCredentials('password');
+        $provider = $this->createProvider($credentials);
+        $token = $provider->getAccessToken('password', [
+            'username' => $credentials['username'],
+            'password' => $credentials['password']
+        ]);
+        $userData = $provider->getUserDetails($token);
     }
 
     public function testGetAccessTokenUsingClientCredentials()
