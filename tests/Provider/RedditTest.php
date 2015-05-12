@@ -8,6 +8,15 @@ use League\OAuth2\Client\Token\AccessToken;
 class RedditTest extends \PHPUnit_Framework_TestCase
 {
 
+    private function constToCamel($name)
+    {
+        return lcfirst(
+            str_replace(" ", "", ucwords(strtolower(
+                str_replace("_", " ", $name)
+            )))
+        );
+    }
+
     private function getBaseCredentials()
     {
         return [
@@ -20,10 +29,12 @@ class RedditTest extends \PHPUnit_Framework_TestCase
     {
         $credentials = [];
         foreach ($_ENV as $key => $value) {
-            $prefix = "reddit_$type";
+            $prefix = strtoupper("reddit_{$type}_");
 
             if (strpos($key, $prefix) === 0) {
-                $credentials[substr($key, strlen($prefix))] = $value;
+                $key = substr($key, strlen($prefix));
+                $key = $this->constToCamel($key);
+                $credentials[$key] = $value;
             }
         }
         return $credentials;
@@ -46,11 +57,10 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         } else {
             $env = __DIR__ . "/env.json";
 
-            if (is_file($env)) {
+            if (is_file($env) && is_readable($env)) {
                 $credentials = json_decode(file_get_contents($env), true);
                 $credentials = $credentials[$type];
             } else if (isset($_ENV['TRAVIS'])) {
-                // get credentials from env
                 $credentials = $this->getCredentialsFromEnv($type);
             } else {
                 $this->markTestSkipped();
