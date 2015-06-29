@@ -1,8 +1,8 @@
 <?php
 
-namespace Rudolf\OAuth2\Client\Tests\Provider;
+namespace Concat\OAuth2\Client\Tests\Provider;
 
-use Rudolf\OAuth2\Client\Provider\Reddit;
+use Concat\OAuth2\Client\Provider\Reddit;
 use League\OAuth2\Client\Token\AccessToken;
 
 class RedditTest extends \PHPUnit_Framework_TestCase
@@ -11,8 +11,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
     private function getBaseCredentials()
     {
         return [
-            'userAgent' => 'phpunit:oauth2:test (by /u/oauth2)',
-            'scopes'    => ['identity', 'read'],
+            'userAgent' => 'ua',
         ];
     }
 
@@ -54,16 +53,34 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertObjectHasAttribute('accessToken', $token);
         $this->assertObjectHasAttribute('expires', $token);
 
-        $this->assertRegExp("~\d{10,}~", "$token->expires");
-        $this->assertTrue( ! empty($token->accessToken));
+        $this->assertRegExp("~\d{10,}~", $token->expires);
+        $this->assertFalse(empty($token->accessToken));
     }
 
-    private function _testGetAuthorizationUrl($options = [])
+    public function getAuthorizationUrlOptions()
     {
+        return [
+            [['duration' => 'permanent']],
+            [['duration' => 'temporary']],
+            [[]]
+        ];
+    }
+
+    /**
+     * @dataProvider getAuthorizationUrlOptions
+     */
+    public function testGetAuthorizationUrl($options = [])
+    {
+        $options = array_merge($options, [
+            'scope'     => ['identity', 'read']
+        ]);
+
         $credentials = $this->getCredentials();
+
         $provider = $this->createProvider($credentials);
 
         $url = $provider->getAuthorizationUrl($options);
+
         extract(parse_url($url));
 
         $this->assertEquals('https', $scheme);
@@ -84,55 +101,24 @@ class RedditTest extends \PHPUnit_Framework_TestCase
             $this->assertFalse(isset($duration));
         }
 
-        $this->assertRegExp('~[a-zA-Z0-9]{32}~', $state);
+        $this->assertRegExp('~.{32}~', $state);
     }
 
-    public function testGetAuthorizationUrl()
-    {
-        $this->_testGetAuthorizationUrl(['duration' => 'permanent']);
-        $this->_testGetAuthorizationUrl(['duration' => 'temporary']);
-        $this->_testGetAuthorizationUrl();
-    }
 
-    public function testGetHeaders()
+
+    public function testGetHeadersWithoutToken()
     {
         $credentials = $this->getCredentials();
         $auth = base64_encode(
-            "{$credentials['clientId']}:{$credentials['clientSecret']}");
+            "{$credentials['clientId']}:{$credentials['clientSecret']}"
+        );
 
         $expected = [
-            "User-Agent"    => $credentials['userAgent'],
             "Authorization" => "Basic $auth"
         ];
 
         $provider = $this->createProvider($credentials);
         $this->assertEquals($expected, $provider->getHeaders());
-    }
-
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testGetHeadersInvalidUserAgent()
-    {
-        $credentials = $this->getCredentials();
-        $credentials['userAgent'] = 'invalid';
-
-        $invalidProvider = $this->createProvider($credentials);
-        $invalidProvider->getHeaders();
-    }
-
-    public function testGetUserAgentFromServer()
-    {
-        $credentials = $this->getCredentials();
-        $userAgent = $credentials['userAgent'];
-        $_SERVER['HTTP_USER_AGENT'] = $userAgent;
-
-        $credentials['userAgent'] = '';
-
-        $provider = $this->createProvider($credentials);
-
-        $this->assertFalse(!! $provider->userAgent);
-        $provider->getHeaders();
     }
 
     public function testGetHeadersWithToken()
@@ -151,6 +137,42 @@ class RedditTest extends \PHPUnit_Framework_TestCase
 
         $provider = $this->createProvider($credentials);
         $this->assertEquals($expected, $provider->getHeaders($token));
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testGetHeadersInvalidUserAgent()
+    {
+        $accessToken = md5(time());
+        $token = new AccessToken([
+            'access_token' => $accessToken,
+            'expires'      => time() + 3600
+        ]);
+
+        $credentials = $this->getCredentials();
+        $credentials['userAgent'] = '';
+
+        $providers = $this->createProvider($credentials);
+        $providers->getHeaders($token);
+    }
+
+    public function testGetUserAgentFromServer()
+    {
+        $accessToken = md5(time());
+        $token = new AccessToken([
+            'access_token' => $accessToken,
+            'expires'      => time() + 3600
+        ]);
+
+        $credentials = $this->getCredentials();
+        $userAgent = $credentials['userAgent'];
+        $_SERVER['HTTP_USER_AGENT'] = $userAgent;
+
+        $credentials['userAgent'] = '';
+
+        $provider = $this->createProvider($credentials);
+        $provider->getHeaders($token);
     }
 
     public function testUserDetails()

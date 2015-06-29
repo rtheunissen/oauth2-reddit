@@ -9,16 +9,16 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
-        "league/oauth2-client": "0.11.*"
+        "php": ">=5.5.0",
+        "league/oauth2-client": "1.0.x-dev"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.0"
     },
     "autoload": {
         "psr-4": {
-            "Rudolf\\OAuth2\\Client\\": "src",
-            "Rudolf\\OAuth2\\Client\\Tests\\": "tests"
+            "Concat\\OAuth2\\Client\\": "src",
+            "Concat\\OAuth2\\Client\\Tests\\": "tests"
         }
     }
 }

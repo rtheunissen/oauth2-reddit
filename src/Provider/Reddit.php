@@ -1,31 +1,31 @@
 <?php
 
-namespace Rudolf\OAuth2\Client\Provider;
+namespace Concat\OAuth2\Client\Provider;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
-use Rudolf\OAuth2\Client\Grant\InstalledClient;
+use Psr\Http\Message\ResponseInterface;
+use Concat\OAuth2\Client\Grant\InstalledClient;
 use InvalidArgumentException;
+use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
 
 class Reddit extends AbstractProvider
 {
+
+    use BearerAuthorizationTrait;
+
     /**
-     * User agent string required by Reddit
+     * User agent string required by reddit
      * Format <platform>:<app ID>:<version string> (by /u/<reddit username>)
      *
      * @see https://github.com/reddit/reddit/wiki/API
      */
-    public $userAgent = "";
+    protected $userAgent = "";
 
     /**
      * {@inheritDoc}
      */
-    public $authorizationHeader = "bearer";
-
-    /**
-     * {@inheritDoc}
-     */
-    public function urlAuthorize()
+    public function getBaseAuthorizationUrl()
     {
         return "https://ssl.reddit.com/api/v1/authorize";
     }
@@ -33,7 +33,7 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
-    public function urlAccessToken()
+    public function getBaseAccessTokenUrl()
     {
         return "https://ssl.reddit.com/api/v1/access_token";
     }
@@ -41,7 +41,7 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
-    public function urlUserDetails(AccessToken $token)
+    public function getUserDetailsUrl(AccessToken $token)
     {
         return "https://oauth.reddit.com/api/v1/me";
     }
@@ -49,18 +49,33 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
-    public function userDetails($response, AccessToken $token)
+    public function getDefaultScopes()
+    {
+        return [
+            'identity',
+        ];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function prepareUserDetails(array $response, AccessToken $token)
     {
         return $response;
+    }
+
+    protected function checkResponse(ResponseInterface $response, $data)
+    {
+
     }
 
     /**
      * Returns the user agent, which is required to be set.
      *
      * @return string
-     * @throws Rudolf\OAuth2\Client\Exception\ProviderException
+     * @throws Concat\OAuth2\Client\Exception\ProviderException
      */
-    protected function getUserAgent()
+    public function getUserAgent()
     {
         if ($this->userAgent) {
             return $this->userAgent;
@@ -71,38 +86,28 @@ class Reddit extends AbstractProvider
     }
 
 
-    /**
-     * Validates that the user agent follows the Reddit API guide.
-     * Pattern: <platform>:<app ID>:<version string> (by /u/<reddit username>)
-     *
-     * @throws Rudolf\OAuth2\Client\Exception\ProviderException
-     */
-    protected function validateUserAgent()
+    protected function getDefaultHeaders(AccessToken $token = null)
     {
-        if ( ! preg_match("~^.+:.+:.+ \(by /u/.+\)$~", $this->getUserAgent())) {
-            throw new InvalidArgumentException("User agent is not valid");
+        if ($token) {
+            // Using the token, so user agent is required.
+
+            if ( ! ($ua = $this->getUserAgent())) {
+                throw new InvalidArgumentException("User agent is required");
+            }
+
+            return [
+                "User-Agent" => $ua,
+            ];
         }
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getHeaders($token = null)
-    {
-        $this->validateUserAgent();
+        // Requesting a token, so HTTP Basic auth is required.
+        $encoded = base64_encode("{$this->clientId}:{$this->clientSecret}");
 
-        $headers = [
-            "User-Agent" => $this->getUserAgent(),
+        return [
+            'Authorization' => "Basic $encoded",
         ];
-
-        // We have to use HTTP Basic Auth when requesting an access token
-        if ( ! $token) {
-            $auth = base64_encode("{$this->clientId}:{$this->clientSecret}");
-            $headers["Authorization"] = "Basic $auth";
-        }
-
-        return array_merge(parent::getHeaders($token), $headers);
     }
+
 
     /**
      * {@inheritDoc}
@@ -125,7 +130,7 @@ class Reddit extends AbstractProvider
      */
     public function getAuthorizationUrl($options = [])
     {
-        $url = parent::getAuthorizationUrl();
+        $url = parent::getAuthorizationUrl($options);
 
         // This is required as an option to be given a refresh token
         if (isset($options["duration"])) {

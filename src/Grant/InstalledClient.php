@@ -1,6 +1,6 @@
 <?php
 
-namespace Rudolf\OAuth2\Client\Grant;
+namespace Concat\OAuth2\Client\Grant;
 
 use League\OAuth2\Client\Grant\GrantInterface;
 use League\OAuth2\Client\Token\AccessToken;
