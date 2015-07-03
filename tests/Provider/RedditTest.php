@@ -53,8 +53,8 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertObjectHasAttribute('accessToken', $token);
         $this->assertObjectHasAttribute('expires', $token);
 
-        $this->assertRegExp("~\d{10,}~", $token->expires);
-        $this->assertFalse(empty($token->accessToken));
+        $this->assertRegExp("~\d{10,}~", "{$token->getExpires()}");
+        $this->assertFalse(empty($token->getToken()));
     }
 
     public function getAuthorizationUrlOptions()
@@ -84,16 +84,16 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         extract(parse_url($url));
 
         $this->assertEquals('https', $scheme);
-        $this->assertEquals('ssl.reddit.com', $host);
+        $this->assertEquals('www.reddit.com', $host);
         $this->assertEquals('/api/v1/authorize', $path);
 
         parse_str($query);
 
-        $this->assertEquals($client_id,         $credentials['clientId']);
-        $this->assertEquals($redirect_uri,      $credentials['redirectUri']);
-        $this->assertEquals($response_type,     'code');
-        $this->assertEquals($approval_prompt,   'auto');
-        $this->assertEquals($scope,             'identity,read');
+        $this->assertEquals($client_id, $credentials['clientId']);
+        $this->assertEquals($redirect_uri, $credentials['redirectUri']);
+        $this->assertEquals($response_type, 'code');
+        $this->assertEquals($approval_prompt, 'auto');
+        $this->assertEquals($scope, 'identity,read');
 
         if (isset($options['duration'])) {
             $this->assertEquals($duration, $options['duration']);
@@ -102,23 +102,6 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->assertRegExp('~.{32}~', $state);
-    }
-
-
-
-    public function testGetHeadersWithoutToken()
-    {
-        $credentials = $this->getCredentials();
-        $auth = base64_encode(
-            "{$credentials['clientId']}:{$credentials['clientSecret']}"
-        );
-
-        $expected = [
-            "Authorization" => "Basic $auth"
-        ];
-
-        $provider = $this->createProvider($credentials);
-        $this->assertEquals($expected, $provider->getHeaders());
     }
 
     public function testGetHeadersWithToken()
@@ -132,7 +115,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $credentials = $this->getCredentials();
         $expected = [
             "User-Agent"    => $credentials['userAgent'],
-            "Authorization" => "bearer $accessToken"
+            "Authorization" => "Bearer $accessToken"
         ];
 
         $provider = $this->createProvider($credentials);
@@ -183,7 +166,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
             'username' => $credentials['username'],
             'password' => $credentials['password']
         ]);
-        $userData = $provider->getUserDetails($token);
+        $userData = $provider->getUser($token);
     }
 
     public function testGetAccessTokenUsingClientCredentials()
