@@ -17,8 +17,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Concat\\OAuth2\\Client\\": "src",
-            "Concat\\OAuth2\\Client\\Tests\\": "tests"
+            "Rudolf\\OAuth2\\Client\\": "src",
+            "Rudolf\\OAuth2\\Client\\Tests\\": "tests"
         }
     }
 }
