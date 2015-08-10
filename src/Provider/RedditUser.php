@@ -19,4 +19,20 @@ class RedditUser implements ResourceOwnerInterface
         $this->data = $response;
         dd($this->data);
     }
+
+    /**
+	 * {@inheritdoc}
+     */
+    public function getId() 
+    {
+
+    }
+    
+    /**
+	 * {@inheritdoc}
+     */
+    public function toArray()
+    {
+    	
+    }
 }
