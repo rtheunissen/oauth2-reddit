@@ -1,6 +1,6 @@
 <?php
 
-namespace Concat\OAuth2\Client\Provider;
+namespace Rudolf\OAuth2\Client\Provider;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
