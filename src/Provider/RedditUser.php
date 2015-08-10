@@ -2,6 +2,7 @@
 
 namespace Rudolf\OAuth2\Client\Provider;
 
+use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 
 class RedditUser implements ResourceOwnerInterface 
 {
