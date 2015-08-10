@@ -17,7 +17,6 @@ class RedditUser implements ResourceOwnerInterface
     public function __construct(array $response)
     {
         $this->data = $response;
-        dd($this->data);
     }
 
     /**
@@ -25,14 +24,54 @@ class RedditUser implements ResourceOwnerInterface
      */
     public function getId() 
     {
+    	return $this->data['id'];
+    }
 
+    /**
+     * Get name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+    	return $this->data['name'];
     }
     
+    /**
+     * Get created at date
+     *
+     * @return string
+     */
+    public function getCreatedAt()
+    {
+    	return $this->data['created'];
+    }
+
+    /**
+     * Get Link Karma
+     *
+     * @return string
+     */
+    public function getLinkKarma()
+    {
+    	return $this->data['link_karma'];
+    }
+
+    /**
+     * Get Comment Karma
+     *
+     * @return string
+     */
+    public function getCommentKarma()
+    {
+    	return $this->data['comment_karma'];
+    }
+
     /**
 	 * {@inheritdoc}
      */
     public function toArray()
     {
-    	
+    	return $this->data;
     }
 }
