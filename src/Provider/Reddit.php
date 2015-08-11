@@ -41,7 +41,7 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
-    public function getUserDetailsUrl(AccessToken $token)
+    public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
         return "https://oauth.reddit.com/api/v1/me";
     }
@@ -137,6 +137,14 @@ class Reddit extends AbstractProvider
         }
 
         return parent::getAccessToken($grant, $options);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function createResourceOwner(array $response, AccessToken $token)
+    {
+        return new RedditUser($response);
     }
 
     /**
