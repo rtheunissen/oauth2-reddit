@@ -1,6 +1,6 @@
 <?php
 
-namespace Rudolf\OAuth2\Client\Provider;
+namespace Concat\OAuth2\Client\Provider;
 
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 
