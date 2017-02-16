@@ -2,13 +2,18 @@
 
 namespace Rudolf\OAuth2\Client\Provider;
 
+use InvalidArgumentException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
+use Psr\Http\Message\ResponseInterface as Response;
 use Rudolf\OAuth2\Client\Grant\InstalledClient;
-use InvalidArgumentException;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
 class Reddit extends AbstractProvider
 {
+    use BearerAuthorizationTrait;
+
     /**
      * User agent string required by Reddit
      * Format <platform>:<app ID>:<version string> (by /u/<reddit username>)
@@ -25,7 +30,7 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
-    public function urlAuthorize()
+    public function getBaseAuthorizationUrl()
     {
         return "https://ssl.reddit.com/api/v1/authorize";
     }
@@ -33,25 +38,42 @@ class Reddit extends AbstractProvider
     /**
      * {@inheritDoc}
      */
-    public function urlAccessToken()
+    public function getBaseAccessTokenUrl(array $params)
     {
         return "https://ssl.reddit.com/api/v1/access_token";
     }
 
+    // AbstractProvider::getBaseAuthorizationUrl, League\OAuth2\Client\Provider\AbstractProvider::getBaseAccessTokenUrl
+
     /**
      * {@inheritDoc}
      */
-    public function urlUserDetails(AccessToken $token)
+    public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
         return "https://oauth.reddit.com/api/v1/me";
+    }
+
+    public function getDefaultScopes()
+    {
+        return ['identity', 'read'];
     }
 
     /**
      * {@inheritDoc}
      */
-    public function userDetails($response, AccessToken $token)
+    public function createResourceOwner(array $response, AccessToken $token)
     {
         return $response;
+    }
+
+    public function checkResponse(Response $response, $data)
+    {
+        if (isset($data['error'])) {
+            throw new IdentityProviderException(
+                $data['error_description'] ?? $data['message'] ?? $data['error'],
+                $response->getStatusCode(),
+                $response);
+        }
     }
 
     /**
@@ -109,7 +131,7 @@ class Reddit extends AbstractProvider
      *
      * @see https://github.com/reddit/reddit/wiki/OAuth2
      */
-    public function getAccessToken($grant = "authorization_code", $params = [])
+    public function getAccessToken($grant, array $options = [])
     {
         // Allow Reddit-specific 'installed_client' to be specified as a string,
         // keeping consistent with the other grant types.
@@ -117,13 +139,13 @@ class Reddit extends AbstractProvider
             $grant = new InstalledClient();
         }
 
-        return parent::getAccessToken($grant, $params);
+        return parent::getAccessToken($grant, $options);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getAuthorizationUrl($options = [])
+    public function getAuthorizationUrl(array $options = [])
     {
         $url = parent::getAuthorizationUrl();
 

@@ -2,35 +2,36 @@
 
 namespace Rudolf\OAuth2\Client\Grant;
 
-use League\OAuth2\Client\Grant\GrantInterface;
+use InvalidArgumentException;
+use League\OAuth2\Client\Grant\AbstractGrant;
 use League\OAuth2\Client\Token\AccessToken;
 
 /**
  * @see https://github.com/reddit/reddit/wiki/OAuth2
  */
-class InstalledClient implements GrantInterface
+class InstalledClient extends AbstractGrant
 {
-    public function __toString()
+    public function getName()
     {
         return 'https://oauth.reddit.com/grants/installed_client';
     }
 
-    public function prepRequestParams($defaultParams, $params)
+    public function getRequiredRequestParameters(): array
     {
-        if ( ! isset($params["device_id"]) || empty($params["device_id"])) {
-            throw new \BadMethodCallException("Missing device_id");
+        return ['device_id'];
+    }
+
+    public function prepareRequestParameters(array $defaults, array $options)
+    {
+        if ( ! isset($options["device_id"]) || empty($options["device_id"])) {
+            throw new InvalidArgumentException("Missing device_id");
         }
 
         // device_id has to be a 20-30 character ASCII string
-        if ( ! preg_match("/^[[:ascii:]]{20,30}$/", $params["device_id"])) {
-          throw new \InvalidArgumentException("Invalid device_id");
+        if ( ! preg_match("/^[[:ascii:]]{20,30}$/", $options["device_id"])) {
+          throw new InvalidArgumentException("Invalid device_id");
         }
 
-        return array_merge($defaultParams, $params);
-    }
-
-    public function handleResponse($response = [])
-    {
-        return new AccessToken($response);
+        return parent::prepareRequestParameters($defaults, $options);
     }
 }

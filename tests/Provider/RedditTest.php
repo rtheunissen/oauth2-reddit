@@ -2,8 +2,9 @@
 
 namespace Rudolf\OAuth2\Client\Tests\Provider;
 
-use Rudolf\OAuth2\Client\Provider\Reddit;
+use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessToken;
+use Rudolf\OAuth2\Client\Provider\Reddit;
 
 class RedditTest extends \PHPUnit_Framework_TestCase
 {
@@ -54,11 +55,23 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertObjectHasAttribute('accessToken', $token);
         $this->assertObjectHasAttribute('expires', $token);
 
-        $this->assertRegExp("~\d{10,}~", "$token->expires");
-        $this->assertTrue( ! empty($token->accessToken));
+        $this->assertRegExp("~\d{10,}~", "{$token->getExpires()}");
+        $this->assertTrue( ! empty($token->getToken()));
     }
 
-    private function _testGetAuthorizationUrl($options = [])
+    public function authorizationUrlOptionsProvider()
+    {
+        return [
+            [['duration' => 'permanent']],
+            [['duration' => 'temporary']],
+            [[]],
+        ];
+    }
+
+    /**
+     * @dataProvider authorizationUrlOptionsProvider
+     */
+    public function testGetAuthorizationUrl(array $options = [])
     {
         $credentials = $this->getCredentials();
         $provider = $this->createProvider($credentials);
@@ -85,13 +98,6 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->assertRegExp('~[a-zA-Z0-9]{32}~', $state);
-    }
-
-    public function testGetAuthorizationUrl()
-    {
-        $this->_testGetAuthorizationUrl(['duration' => 'permanent']);
-        $this->_testGetAuthorizationUrl(['duration' => 'temporary']);
-        $this->_testGetAuthorizationUrl();
     }
 
     public function testGetHeaders()
@@ -146,7 +152,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $credentials = $this->getCredentials();
         $expected = [
             "User-Agent"    => $credentials['userAgent'],
-            "Authorization" => "bearer $accessToken"
+            "Authorization" => "Bearer $accessToken"
         ];
 
         $provider = $this->createProvider($credentials);
@@ -161,7 +167,7 @@ class RedditTest extends \PHPUnit_Framework_TestCase
             'username' => $credentials['username'],
             'password' => $credentials['password']
         ]);
-        $userData = $provider->getUserDetails($token);
+        $userData = $provider->getResourceOwner($token);
     }
 
     public function testGetAccessTokenUsingClientCredentials()
@@ -195,58 +201,25 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertValidAccessToken($token);
     }
 
-    private function _testDeviceId($options = [])
+    public function deviceIdProvider()
     {
+        return [
+            [[]],
+            [["device_id" => ""]],                    // Equivalent to not provided
+            [["device_id" => "abc"]],                 // Too short
+            [["device_id" => md5("abc")]],            // Too long
+            [["device_id"  => str_repeat("☕", 24)]],  // Has to be ASCII
+        ];
+    }
+
+    /**
+     * @dataProvider deviceIdProvider
+     */
+    public function testDeviceId($options = [])
+    {
+        $this->setExpectedException(InvalidArgumentException::class);
         $credentials = $this->getCredentials('installed_client');
         $provider = $this->createProvider($credentials);
         $token = $provider->getAccessToken('installed_client', $options);
-    }
-
-    /**
-     * @expectedException BadMethodCallException
-     */
-    public function testGetAccessTokenUsingImplicitFlowWithoutDeviceId()
-    {
-        $this->_testDeviceId();
-    }
-
-    /**
-     * @expectedException BadMethodCallException
-     */
-    public function testGetAccessTokenUsingImplicitFlowWithBlankDeviceId()
-    {
-        $this->_testDeviceId([
-            "device_id" => "" // equivalent to not provided
-        ]);
-    }
-
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testGetAccessTokenUsingImplicitFlowWithShortDeviceId()
-    {
-        $this->_testDeviceId([
-            "device_id" => "abc" // too short
-        ]);
-    }
-
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testGetAccessTokenUsingImplicitFlowWithInvalidDeviceId()
-    {
-        $this->_testDeviceId([
-            "device_id" => str_repeat("☕", 24), // has to be ASCII
-        ]);
-    }
-
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testGetAccessTokenUsingImplicitFlowWithLongDeviceId()
-    {
-        $this->_testDeviceId([
-            "device_id" => md5(""), // too long
-        ]);
     }
 }
