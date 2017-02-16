@@ -66,11 +66,28 @@ class Reddit extends AbstractProvider
         return $response;
     }
 
+    private function parseErrorMessage($data)
+    {
+        if (isset($data['error_description'])) {
+            return $data['error_description'];
+        }
+
+        if (isset($data['message'])) {
+            return $data['message'];
+        }
+
+        if (isset($data['error'])) {
+            return $data['error'];
+        }
+
+        return 'Unknown error';
+    }
+
     public function checkResponse(Response $response, $data)
     {
         if (isset($data['error'])) {
             throw new IdentityProviderException(
-                $data['error_description'] ?? $data['message'] ?? $data['error'],
+                $this->parseErrorMessage($data),
                 $response->getStatusCode(),
                 $response);
         }
