@@ -164,7 +164,7 @@ class Reddit extends AbstractProvider
      */
     public function getAuthorizationUrl(array $options = [])
     {
-        $url = parent::getAuthorizationUrl();
+        $url = parent::getAuthorizationUrl($options);
 
         // This is required as an option to be given a refresh token
         if (isset($options["duration"])) {
