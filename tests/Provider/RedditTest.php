@@ -83,21 +83,21 @@ class RedditTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('ssl.reddit.com', $host);
         $this->assertEquals('/api/v1/authorize', $path);
 
-        parse_str($query);
+        parse_str($query, $result);
 
-        $this->assertEquals($client_id,         $credentials['clientId']);
-        $this->assertEquals($redirect_uri,      $credentials['redirectUri']);
-        $this->assertEquals($response_type,     'code');
-        $this->assertEquals($approval_prompt,   'auto');
-        $this->assertEquals($scope,             'identity,read');
+        $this->assertEquals($result['client_id'],         $credentials['clientId']);
+        $this->assertEquals($result['redirect_uri'],      $credentials['redirectUri']);
+        $this->assertEquals($result['response_type'],     'code');
+        $this->assertEquals($result['approval_prompt'],   'auto');
+        $this->assertEquals($result['scope'],             'identity,read');
 
         if (isset($options['duration'])) {
-            $this->assertEquals($duration, $options['duration']);
+            $this->assertEquals($result['duration'], $options['duration']);
         } else {
-            $this->assertFalse(isset($duration));
+            $this->assertFalse(isset($result['duration']));
         }
 
-        $this->assertRegExp('~[a-zA-Z0-9]{32}~', $state);
+        $this->assertRegExp('~[a-zA-Z0-9]{32}~', $result['state']);
     }
 
     public function testGetHeaders()
