@@ -12,7 +12,7 @@ This package provides Reddit integration for [thephpleague/oauth2-client](https:
 ## Installation
 
 ```sh
-composer require rtheunissen/oauth2-reddit
+composer require sluther/oauth2-reddit
 ```
 
 ## Usage
