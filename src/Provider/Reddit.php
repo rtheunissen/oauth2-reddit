@@ -158,19 +158,4 @@ class Reddit extends AbstractProvider
 
         return parent::getAccessToken($grant, $options);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAuthorizationUrl(array $options = [])
-    {
-        $url = parent::getAuthorizationUrl($options);
-
-        // This is required as an option to be given a refresh token
-        if (isset($options["duration"])) {
-            $url .= "&duration={$options['duration']}";
-        }
-
-        return $url;
-    }
 }

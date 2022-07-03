@@ -1,11 +1,15 @@
 {
-    "name": "rtheunissen/oauth2-reddit",
+    "name": "sluther/oauth2-reddit",
     "description": "Reddit OAuth2 provider for league/oauth2-client",
     "license": "MIT",
     "authors": [
         {
             "name": "Rudi Theunissen",
             "email": "rudolf.theunissen@gmail.com"
+        },
+        {
+            "name": "Scott Luther",
+            "email": "neenach2002@gmail.com"
         }
     ],
     "require": {
